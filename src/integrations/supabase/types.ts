@@ -14,16 +14,463 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          code: string
+          id: string
+          label: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          id?: string
+          label: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          id?: string
+          label?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      boards: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      chapter_progress: {
+        Row: {
+          chapter_id: string
+          id: string
+          last_seen_at: string
+          mastery: number
+          quizzes_taken: number
+          sessions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chapter_id: string
+          id?: string
+          last_seen_at?: string
+          mastery?: number
+          quizzes_taken?: number
+          sessions?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chapter_id?: string
+          id?: string
+          last_seen_at?: string
+          mastery?: number
+          quizzes_taken?: number
+          sessions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_progress_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chapters: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          position: number
+          subject_id: string
+          summary: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          position?: number
+          subject_id: string
+          summary?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          position?: number
+          subject_id?: string
+          summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapters_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grade_levels: {
+        Row: {
+          board_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          position: number
+        }
+        Insert: {
+          board_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          position?: number
+        }
+        Update: {
+          board_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grade_levels_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "boards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_records: {
+        Row: {
+          answer: string | null
+          attachment_type: string | null
+          attachment_url: string | null
+          chapter_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          language: string | null
+          mode: string | null
+          prompt: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          answer?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          chapter_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          language?: string | null
+          mode?: string | null
+          prompt?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          answer?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
+          chapter_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          language?: string | null
+          mode?: string | null
+          prompt?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_records_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          board_id: string | null
+          created_at: string
+          full_name: string | null
+          grade_level_id: string | null
+          id: string
+          last_active_at: string | null
+          last_activity_label: string | null
+          last_chapter_id: string | null
+          last_streak_date: string | null
+          second_language: string
+          streak_days: number
+          updated_at: string
+          xp: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          board_id?: string | null
+          created_at?: string
+          full_name?: string | null
+          grade_level_id?: string | null
+          id: string
+          last_active_at?: string | null
+          last_activity_label?: string | null
+          last_chapter_id?: string | null
+          last_streak_date?: string | null
+          second_language?: string
+          streak_days?: number
+          updated_at?: string
+          xp?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          board_id?: string | null
+          created_at?: string
+          full_name?: string | null
+          grade_level_id?: string | null
+          id?: string
+          last_active_at?: string | null
+          last_activity_label?: string | null
+          last_chapter_id?: string | null
+          last_streak_date?: string | null
+          second_language?: string
+          streak_days?: number
+          updated_at?: string
+          xp?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "boards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_grade_level_id_fkey"
+            columns: ["grade_level_id"]
+            isOneToOne: false
+            referencedRelation: "grade_levels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_last_chapter_id_fkey"
+            columns: ["last_chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          answers: Json
+          chapter_id: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          language: string | null
+          mode: string
+          questions: Json
+          score: number | null
+          title: string
+          total: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          chapter_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+          mode?: string
+          questions?: Json
+          score?: number | null
+          title: string
+          total?: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          chapter_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+          mode?: string
+          questions?: Json
+          score?: number | null
+          title?: string
+          total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subjects: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          grade_level_id: string
+          icon: string | null
+          id: string
+          name: string
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          grade_level_id: string
+          icon?: string | null
+          id?: string
+          name: string
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          grade_level_id?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subjects_grade_level_id_fkey"
+            columns: ["grade_level_id"]
+            isOneToOne: false
+            referencedRelation: "grade_levels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teacher_notes: {
+        Row: {
+          body: string | null
+          chapter_id: string | null
+          created_at: string
+          id: string
+          published: boolean
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          chapter_id?: string | null
+          created_at?: string
+          id?: string
+          published?: boolean
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          chapter_id?: string | null
+          created_at?: string
+          id?: string
+          published?: boolean
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_notes_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "student" | "teacher" | "parent" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +597,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["student", "teacher", "parent", "admin"],
+    },
   },
 } as const
