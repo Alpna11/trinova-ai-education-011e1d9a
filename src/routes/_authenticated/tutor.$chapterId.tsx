@@ -40,7 +40,7 @@ export const Route = createFileRoute("/_authenticated/tutor/$chapterId")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: TutorPage;
+  component: TutorPage,
 });
 
 function TutorPage() {
