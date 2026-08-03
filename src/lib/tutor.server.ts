@@ -27,7 +27,7 @@ export function tutorSystemPrompt(opts: {
   mode: string;
   language: string;
   bilingual: boolean;
-  context?: string;
+  context?: string | undefined;
 }) {
   const lines = [
     "You are Edunova's AI tutor for school students. You are warm, encouraging and never condescending.",
