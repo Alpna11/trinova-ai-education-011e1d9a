@@ -5,15 +5,15 @@ export type RecordKind = "explanation" | "doubt" | "quiz" | "resource";
 
 export async function saveLearningRecord(input: {
   userId: string;
-  chapterId?: string | null;
+  chapterId?: string | null | undefined;
   kind: RecordKind;
-  mode?: string;
-  language?: string;
+  mode?: string | undefined;
+  language?: string | undefined;
   title: string;
-  prompt?: string;
-  answer?: string;
-  attachmentUrl?: string | null;
-  attachmentType?: string | null;
+  prompt?: string | undefined;
+  answer?: string | undefined;
+  attachmentUrl?: string | null | undefined;
+  attachmentType?: string | null | undefined;
 }) {
   const { data, error } = await supabase
     .from("learning_records")
@@ -37,9 +37,9 @@ export async function saveLearningRecord(input: {
 
 export async function touchContinueLearning(input: {
   userId: string;
-  chapterId?: string | null;
+  chapterId?: string | null | undefined;
   label: string;
-  xp?: number;
+  xp?: number | undefined;
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const { data: current } = await supabase
@@ -71,9 +71,9 @@ export async function touchContinueLearning(input: {
 export async function bumpChapterProgress(input: {
   userId: string;
   chapterId: string;
-  sessionDelta?: number;
-  quizDelta?: number;
-  masteryScore?: number;
+  sessionDelta?: number | undefined;
+  quizDelta?: number | undefined;
+  masteryScore?: number | undefined;
 }) {
   const { data: existing } = await supabase
     .from("chapter_progress")

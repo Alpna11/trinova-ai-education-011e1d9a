@@ -35,7 +35,7 @@ export type QuizQuestion = {
   options: string[];
   answerIndex: number;
   explanation: string;
-  topic?: string;
+  topic?: string | undefined;
 };
 
 export const ACHIEVEMENTS: { code: string; label: string; hint: string; xp: number }[] = [

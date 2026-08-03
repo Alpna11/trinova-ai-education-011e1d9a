@@ -167,7 +167,7 @@ function TutorPage() {
         answers: quiz.map((_, i) => picked[i] ?? null),
         score,
         total: quiz.length,
-        weak_topics: weak,
+        weak_topics: weak as unknown as string[],
         completed_at: new Date().toISOString(),
       })
       .select("id")
