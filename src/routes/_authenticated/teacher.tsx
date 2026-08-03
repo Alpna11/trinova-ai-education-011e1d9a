@@ -42,13 +42,18 @@ function TeacherPage() {
     queryFn: async () => {
       const [students, quizzes, notes] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("quizzes").select("score, total, weak_topics").not("completed_at", "is", null),
+        supabase.from("quizzes").select("*").not("completed_at", "is", null),
         supabase.from("teacher_notes").select("id, title, created_at").order("created_at", {
           ascending: false,
         }),
       ]);
 
-      const rows = (quizzes.data ?? []) as { score: number | null; total: number }[];
+      const quizRows = (quizzes.data ?? []) as unknown as {
+        score: number | null;
+        total: number;
+        weak_topics?: string[] | null;
+      }[];
+      const rows = quizRows;
       const avg = rows.length
         ? Math.round(
             (rows.reduce((s, q) => s + (q.score ?? 0) / Math.max(q.total, 1), 0) / rows.length) *
@@ -57,8 +62,8 @@ function TeacherPage() {
         : null;
 
       const topicCount = new Map<string, number>();
-      for (const q of quizzes.data ?? []) {
-        for (const t of ((q as { weak_topics?: string[] }).weak_topics ?? []) as string[]) {
+      for (const q of quizRows) {
+        for (const t of q.weak_topics ?? []) {
           topicCount.set(t, (topicCount.get(t) ?? 0) + 1);
         }
       }

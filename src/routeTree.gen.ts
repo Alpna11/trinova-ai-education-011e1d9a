@@ -14,7 +14,9 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAskRouteImport } from './routes/_authenticated/ask'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
+import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
 import { Route as AuthenticatedTutorChapterIdRouteImport } from './routes/_authenticated/tutor.$chapterId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,9 +43,19 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
   id: '/learn',
   path: '/learn',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTeacherRoute = AuthenticatedTeacherRouteImport.update({
+  id: '/teacher',
+  path: '/teacher',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTutorChapterIdRoute =
@@ -58,7 +70,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/ask': typeof AuthenticatedAskRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/history': typeof AuthenticatedHistoryRoute
   '/learn': typeof AuthenticatedLearnRoute
+  '/teacher': typeof AuthenticatedTeacherRoute
   '/tutor/$chapterId': typeof AuthenticatedTutorChapterIdRoute
 }
 export interface FileRoutesByTo {
@@ -66,7 +80,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/ask': typeof AuthenticatedAskRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/history': typeof AuthenticatedHistoryRoute
   '/learn': typeof AuthenticatedLearnRoute
+  '/teacher': typeof AuthenticatedTeacherRoute
   '/tutor/$chapterId': typeof AuthenticatedTutorChapterIdRoute
 }
 export interface FileRoutesById {
@@ -76,15 +92,32 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/ask': typeof AuthenticatedAskRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
+  '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
   '/_authenticated/tutor/$chapterId': typeof AuthenticatedTutorChapterIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/ask' | '/dashboard' | '/learn' | '/tutor/$chapterId'
+    | '/'
+    | '/auth'
+    | '/ask'
+    | '/dashboard'
+    | '/history'
+    | '/learn'
+    | '/teacher'
+    | '/tutor/$chapterId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/ask' | '/dashboard' | '/learn' | '/tutor/$chapterId'
+  to:
+    | '/'
+    | '/auth'
+    | '/ask'
+    | '/dashboard'
+    | '/history'
+    | '/learn'
+    | '/teacher'
+    | '/tutor/$chapterId'
   id:
     | '__root__'
     | '/'
@@ -92,7 +125,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/ask'
     | '/_authenticated/dashboard'
+    | '/_authenticated/history'
     | '/_authenticated/learn'
+    | '/_authenticated/teacher'
     | '/_authenticated/tutor/$chapterId'
   fileRoutesById: FileRoutesById
 }
@@ -139,11 +174,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/history': {
+      id: '/_authenticated/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/learn': {
       id: '/_authenticated/learn'
       path: '/learn'
       fullPath: '/learn'
       preLoaderRoute: typeof AuthenticatedLearnRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/teacher': {
+      id: '/_authenticated/teacher'
+      path: '/teacher'
+      fullPath: '/teacher'
+      preLoaderRoute: typeof AuthenticatedTeacherRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tutor/$chapterId': {
@@ -159,14 +208,18 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAskRoute: typeof AuthenticatedAskRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
+  AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
   AuthenticatedTutorChapterIdRoute: typeof AuthenticatedTutorChapterIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAskRoute: AuthenticatedAskRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
+  AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
   AuthenticatedTutorChapterIdRoute: AuthenticatedTutorChapterIdRoute,
 }
 
