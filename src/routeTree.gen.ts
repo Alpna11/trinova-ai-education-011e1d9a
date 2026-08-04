@@ -17,6 +17,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
+import { Route as AuthenticatedChapterChapterIdRouteImport } from './routes/_authenticated/chapter.$chapterId'
 import { Route as AuthenticatedTutorChapterIdRouteImport } from './routes/_authenticated/tutor.$chapterId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -58,6 +59,12 @@ const AuthenticatedTeacherRoute = AuthenticatedTeacherRouteImport.update({
   path: '/teacher',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedChapterChapterIdRoute =
+  AuthenticatedChapterChapterIdRouteImport.update({
+    id: '/chapter/$chapterId',
+    path: '/chapter/$chapterId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTutorChapterIdRoute =
   AuthenticatedTutorChapterIdRouteImport.update({
     id: '/tutor/$chapterId',
@@ -73,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof AuthenticatedHistoryRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/teacher': typeof AuthenticatedTeacherRoute
+  '/chapter/$chapterId': typeof AuthenticatedChapterChapterIdRoute
   '/tutor/$chapterId': typeof AuthenticatedTutorChapterIdRoute
 }
 export interface FileRoutesByTo {
@@ -83,6 +91,7 @@ export interface FileRoutesByTo {
   '/history': typeof AuthenticatedHistoryRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/teacher': typeof AuthenticatedTeacherRoute
+  '/chapter/$chapterId': typeof AuthenticatedChapterChapterIdRoute
   '/tutor/$chapterId': typeof AuthenticatedTutorChapterIdRoute
 }
 export interface FileRoutesById {
@@ -95,6 +104,7 @@ export interface FileRoutesById {
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
+  '/_authenticated/chapter/$chapterId': typeof AuthenticatedChapterChapterIdRoute
   '/_authenticated/tutor/$chapterId': typeof AuthenticatedTutorChapterIdRoute
 }
 export interface FileRouteTypes {
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/learn'
     | '/teacher'
+    | '/chapter/$chapterId'
     | '/tutor/$chapterId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/learn'
     | '/teacher'
+    | '/chapter/$chapterId'
     | '/tutor/$chapterId'
   id:
     | '__root__'
@@ -128,6 +140,7 @@ export interface FileRouteTypes {
     | '/_authenticated/history'
     | '/_authenticated/learn'
     | '/_authenticated/teacher'
+    | '/_authenticated/chapter/$chapterId'
     | '/_authenticated/tutor/$chapterId'
   fileRoutesById: FileRoutesById
 }
@@ -195,6 +208,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeacherRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/chapter/$chapterId': {
+      id: '/_authenticated/chapter/$chapterId'
+      path: '/chapter/$chapterId'
+      fullPath: '/chapter/$chapterId'
+      preLoaderRoute: typeof AuthenticatedChapterChapterIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/tutor/$chapterId': {
       id: '/_authenticated/tutor/$chapterId'
       path: '/tutor/$chapterId'
@@ -211,6 +231,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
   AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
+  AuthenticatedChapterChapterIdRoute: typeof AuthenticatedChapterChapterIdRoute
   AuthenticatedTutorChapterIdRoute: typeof AuthenticatedTutorChapterIdRoute
 }
 
@@ -220,6 +241,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
   AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
+  AuthenticatedChapterChapterIdRoute: AuthenticatedChapterChapterIdRoute,
   AuthenticatedTutorChapterIdRoute: AuthenticatedTutorChapterIdRoute,
 }
 
