@@ -56,7 +56,7 @@ function Dropdown({
       <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {label}
       </Label>
-      <Select value={value ?? undefined} onValueChange={onChange} disabled={disabled}>
+      <Select value={value ?? undefined} onValueChange={onChange} disabled={!!disabled}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
