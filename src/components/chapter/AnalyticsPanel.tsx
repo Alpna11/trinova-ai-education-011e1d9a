@@ -4,6 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { masteryLabel } from "@/lib/edunova";
 import { Progress } from "@/components/ui/progress";
 
+type QuizRow = {
+  id: string;
+  title: string;
+  score: number | null;
+  total: number;
+  completed_at: string | null;
+  weak_topics: string[] | null;
+};
+
 export function AnalyticsPanel({
   chapterId,
   userId,
@@ -24,7 +33,7 @@ export function AnalyticsPanel({
           .maybeSingle(),
         supabase
           .from("quizzes")
-          .select("id, title, score, total, weak_topics, completed_at")
+          .select("id, title, score, total, completed_at, weak_topics")
           .eq("user_id", userId!)
           .eq("chapter_id", chapterId)
           .order("created_at", { ascending: false })
@@ -32,7 +41,7 @@ export function AnalyticsPanel({
       ]);
       return {
         progress: progress.data,
-        quizzes: quizzes.data ?? [],
+        quizzes: (quizzes.data ?? []) as unknown as QuizRow[],
       };
     },
   });
@@ -41,7 +50,7 @@ export function AnalyticsPanel({
   const weak = Array.from(
     new Set(
       (data?.quizzes ?? []).flatMap((q) =>
-        Array.isArray(q.weak_topics) ? (q.weak_topics as string[]) : [],
+        Array.isArray(q.weak_topics) ? q.weak_topics : [],
       ),
     ),
   ).slice(0, 8);
