@@ -13,6 +13,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { levelFromXp } from "@/lib/edunova";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -78,6 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <span className="hidden items-center gap-1.5 rounded-full bg-lime-soft px-3 py-1.5 text-xs font-semibold text-lime sm:flex">
               <Flame className="size-3.5" />
               {data?.profile?.streak_days ?? 0}d · Lv {level}

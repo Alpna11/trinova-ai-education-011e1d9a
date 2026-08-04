@@ -62,6 +62,47 @@ export type Database = {
         }
         Relationships: []
       }
+      chapter_content: {
+        Row: {
+          chapter_id: string
+          content: Json
+          created_at: string
+          id: string
+          kind: string
+          language: string
+          mode: string
+          updated_at: string
+        }
+        Insert: {
+          chapter_id: string
+          content?: Json
+          created_at?: string
+          id?: string
+          kind: string
+          language?: string
+          mode?: string
+          updated_at?: string
+        }
+        Update: {
+          chapter_id?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          kind?: string
+          language?: string
+          mode?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_content_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chapter_progress: {
         Row: {
           chapter_id: string

@@ -123,7 +123,7 @@ function Dashboard() {
         </div>
         {data?.lastChapter ? (
           <Link
-            to="/tutor/$chapterId"
+            to="/chapter/$chapterId"
             params={{ chapterId: data.lastChapter.id }}
             className="glow inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5"
           >

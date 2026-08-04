@@ -1,10 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { ArrowRight, BookOpen, ChevronRight, GraduationCap, Layers, Library } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
-import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   head: () => ({
@@ -13,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/learn")({
       {
         name: "description",
         content:
-          "Pick your board, class, subject and chapter to start an AI tutoring session tailored to your syllabus.",
+          "Pick your board, class, subject and chapter to open a chapter hub with AI notes, tutor, quizzes and analytics.",
       },
       { property: "og:title", content: "Choose your chapter — Edunova" },
       {
@@ -29,45 +36,38 @@ export const Route = createFileRoute("/_authenticated/learn")({
 
 type Row = { id: string; name: string; summary?: string | null };
 
-function Column({
-  icon: Icon,
-  title,
+function Dropdown({
+  label,
+  value,
   rows,
-  selected,
-  onSelect,
-  empty,
+  placeholder,
+  disabled,
+  onChange,
 }: {
-  icon: typeof BookOpen;
-  title: string;
+  label: string;
+  value: string | null;
   rows: Row[] | undefined;
-  selected: string | null;
-  onSelect: (id: string) => void;
-  empty: string;
+  placeholder: string;
+  disabled?: boolean;
+  onChange: (id: string) => void;
 }) {
   return (
-    <div className="panel flex min-h-[18rem] flex-col p-4">
-      <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        <Icon className="size-4 text-lime" /> {title}
-      </h2>
-      <div className="scroll-slim mt-3 flex-1 space-y-1.5 overflow-y-auto">
-        {rows?.length ? (
-          rows.map((row) => (
-            <button
-              key={row.id}
-              onClick={() => onSelect(row.id)}
-              className={cn(
-                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-surface-2",
-                selected === row.id && "bg-primary text-primary-foreground hover:bg-primary",
-              )}
-            >
-              <span className="truncate">{row.name}</span>
-              <ChevronRight className="ml-auto size-4 shrink-0 opacity-60" />
-            </button>
-          ))
-        ) : (
-          <p className="px-1 py-4 text-sm text-muted-foreground">{empty}</p>
-        )}
-      </div>
+    <div className="space-y-2">
+      <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </Label>
+      <Select {...(value ? { value } : {})} onValueChange={onChange} disabled={!!disabled}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {(rows ?? []).map((row) => (
+            <SelectItem key={row.id} value={row.id}>
+              {row.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
@@ -78,6 +78,11 @@ function Learn() {
   const [boardId, setBoardId] = useState<string | null>(null);
   const [gradeId, setGradeId] = useState<string | null>(null);
   const [subjectId, setSubjectId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (me?.profile?.board_id && !boardId) setBoardId(me.profile.board_id);
+    if (me?.profile?.grade_level_id && !gradeId) setGradeId(me.profile.grade_level_id);
+  }, [me, boardId, gradeId]);
 
   const boards = useQuery({
     queryKey: ["boards"],
@@ -137,7 +142,7 @@ function Learn() {
       <div>
         <h1 className="font-display text-3xl font-bold">Choose your chapter</h1>
         <p className="mt-1 text-muted-foreground">
-          Board → class → subject → chapter. Your tutor uses this to stay on syllabus.
+          Board → class → subject → chapter. Everything after that is generated from your syllabus.
         </p>
       </div>
 
@@ -168,66 +173,67 @@ function Learn() {
         </div>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Column
-          icon={Library}
-          title="Board"
+      <div className="panel grid gap-4 p-5 md:grid-cols-3">
+        <Dropdown
+          label="Board"
+          value={boardId}
           rows={boards.data}
-          selected={boardId}
-          empty="No boards yet."
-          onSelect={(id) => {
+          placeholder="Select board"
+          onChange={(id) => {
             setBoardId(id);
             setGradeId(null);
             setSubjectId(null);
           }}
         />
-        <Column
-          icon={GraduationCap}
-          title="Class"
+        <Dropdown
+          label="Class"
+          value={gradeId}
           rows={grades.data}
-          selected={gradeId}
-          empty={boardId ? "No classes in this board." : "Pick a board first."}
-          onSelect={(id) => {
+          placeholder={boardId ? "Select class" : "Pick a board first"}
+          disabled={!boardId}
+          onChange={(id) => {
             setGradeId(id);
             setSubjectId(null);
           }}
         />
-        <Column
-          icon={Layers}
-          title="Subject"
+        <Dropdown
+          label="Subject"
+          value={subjectId}
           rows={subjects.data}
-          selected={subjectId}
-          empty={gradeId ? "No subjects in this class." : "Pick a class first."}
-          onSelect={setSubjectId}
+          placeholder={gradeId ? "Select subject" : "Pick a class first"}
+          disabled={!gradeId}
+          onChange={setSubjectId}
         />
-        <div className="panel flex min-h-[18rem] flex-col p-4">
-          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            <BookOpen className="size-4 text-lime" /> Chapter
-          </h2>
-          <div className="scroll-slim mt-3 flex-1 space-y-1.5 overflow-y-auto">
-            {chapters.data?.length ? (
-              chapters.data.map((c) => (
+      </div>
+
+      <section className="panel p-5">
+        <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
+          <BookOpen className="size-4 text-lime" /> Chapters
+        </h2>
+        {chapters.data?.length ? (
+          <ul className="mt-4 grid gap-2 md:grid-cols-2">
+            {chapters.data.map((c) => (
+              <li key={c.id}>
                 <button
-                  key={c.id}
-                  onClick={() => navigate({ to: "/tutor/$chapterId", params: { chapterId: c.id } })}
-                  className="w-full rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-surface-2"
+                  onClick={() =>
+                    navigate({ to: "/chapter/$chapterId", params: { chapterId: c.id } })
+                  }
+                  className="w-full rounded-xl border border-border px-4 py-3 text-left transition-colors hover:bg-surface-2"
                 >
                   <span className="font-medium">{c.name}</span>
                   {c.summary ? (
-                    <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                      {c.summary}
-                    </span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{c.summary}</span>
                   ) : null}
                 </button>
-              ))
-            ) : (
-              <p className="px-1 py-4 text-sm text-muted-foreground">
-                {subjectId ? "No chapters in this subject." : "Pick a subject first."}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-muted-foreground">
+            {subjectId ? "No chapters in this subject yet." : "Pick a subject to see its chapters."}
+          </p>
+        )}
+      </section>
     </div>
   );
 }
