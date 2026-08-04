@@ -40,14 +40,14 @@ export const getChapterMaterial = createServerFn({ method: "POST" })
     if (!data.refresh) {
       const { data: cached } = await supabaseAdmin
         .from("chapter_content")
-        .select("payload")
+        .select("content")
         .eq("chapter_id", data.chapterId)
         .eq("kind", data.kind)
         .eq("mode", data.mode)
         .eq("language", lang)
         .maybeSingle();
-      if (cached?.payload) {
-        return { payload: cached.payload as MaterialPayload, cached: true };
+      if (cached?.content) {
+        return { payload: cached.content as MaterialPayload, cached: true };
       }
     }
 
@@ -78,7 +78,7 @@ export const getChapterMaterial = createServerFn({ method: "POST" })
           kind: data.kind,
           mode: data.mode,
           language: lang,
-          payload: payload as never,
+          content: payload as never,
         } as never,
         { onConflict: "chapter_id,kind,mode,language" },
       );
