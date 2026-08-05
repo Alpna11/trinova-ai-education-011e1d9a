@@ -1,6 +1,11 @@
 // Server-only helpers for Edunova's AI tutor. Never imported by client code directly.
+// All AI calls run here: the API key stays in server env vars and is never sent to the browser.
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+// Direct Google Gemini endpoint, used only when a GEMINI_API_KEY is configured.
+const GEMINI_DIRECT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 const MODEL = "google/gemini-3.6-flash";
+const DIRECT_MODEL = "gemini-2.5-flash";
+const TIMEOUT_MS = 60_000;
 
 type Part =
   | { type: "text"; text: string }
