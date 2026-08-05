@@ -1,6 +1,11 @@
 // Server-only helpers for Edunova's AI tutor. Never imported by client code directly.
+// All AI calls run here: the API key stays in server env vars and is never sent to the browser.
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+// Direct Google Gemini endpoint, used only when a GEMINI_API_KEY is configured.
+const GEMINI_DIRECT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 const MODEL = "google/gemini-3.6-flash";
+const DIRECT_MODEL = "gemini-2.5-flash";
+const TIMEOUT_MS = 60_000;
 
 type Part =
   | { type: "text"; text: string }
@@ -46,32 +51,74 @@ export function tutorSystemPrompt(opts: {
   return lines.join("\n");
 }
 
-export async function callGateway(
-  messages: ChatMessage[],
-  options: { json?: boolean; maxTokens?: number } = {},
-): Promise<string> {
-  const key = process.env["LOVABLE_API_KEY"];
-  if (!key) throw new Error("AI is not configured yet. Missing LOVABLE_API_KEY.");
-
-  const res = await fetch(GATEWAY, {
-    method: "POST",
+function resolveProvider() {
+  const geminiKey = process.env["GEMINI_API_KEY"];
+  if (geminiKey) {
+    return {
+      url: GEMINI_DIRECT,
+      model: DIRECT_MODEL,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${geminiKey}`,
+      } as Record<string, string>,
+    };
+  }
+  const lovableKey = process.env["LOVABLE_API_KEY"];
+  if (!lovableKey) {
+    throw new Error("AI is not configured yet. Add a GEMINI_API_KEY to enable the tutor.");
+  }
+  return {
+    url: GATEWAY,
+    model: MODEL,
     headers: {
       "Content-Type": "application/json",
-      "Lovable-API-Key": key,
+      "Lovable-API-Key": lovableKey,
       "X-Lovable-AIG-SDK": "fetch",
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages,
-      max_tokens: options.maxTokens ?? 2600,
-      ...(options.json ? { response_format: { type: "json_object" } } : {}),
-    }),
-  });
+    } as Record<string, string>,
+  };
+}
+
+export async function callGateway(
+  messages: ChatMessage[],
+  options: { json?: boolean; maxTokens?: number; retries?: number } = {},
+): Promise<string> {
+  const provider = resolveProvider();
+  const retries = options.retries ?? 1;
+
+  let res: Response;
+  try {
+    res = await fetch(provider.url, {
+      method: "POST",
+      headers: provider.headers,
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+      body: JSON.stringify({
+        model: provider.model,
+        messages,
+        max_tokens: options.maxTokens ?? 2600,
+        ...(options.json ? { response_format: { type: "json_object" } } : {}),
+      }),
+    });
+  } catch (error) {
+    console.error("[edunova-ai] network failure", error);
+    throw new Error("Couldn't reach the AI service. Check your connection and try again.");
+  }
 
   if (!res.ok) {
     const body = await res.text();
-    console.error(`[edunova-ai] gateway ${res.status}: ${body}`);
-    if (res.status === 429) throw new Error("The AI tutor is busy right now. Try again in a moment.");
+    console.error(`[edunova-ai] provider ${res.status}: ${body}`);
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("The AI key is invalid or lacks access. Please update it and retry.");
+    }
+    if (res.status === 429 || res.status >= 500) {
+      if (retries > 0) {
+        await new Promise((r) => setTimeout(r, 1200));
+        return callGateway(messages, { ...options, retries: retries - 1 });
+      }
+      if (res.status === 429) {
+        throw new Error("The AI tutor is busy right now. Try again in a moment.");
+      }
+      throw new Error("The AI service is temporarily unavailable. Please try again.");
+    }
     if (res.status === 402) throw new Error("AI credits are exhausted. Add credits to keep tutoring.");
     throw new Error(`AI request failed (${res.status}).`);
   }
@@ -80,7 +127,10 @@ export async function callGateway(
     choices?: { message?: { content?: string } }[];
   };
   const text = data.choices?.[0]?.message?.content?.trim();
-  if (!text) throw new Error("The AI tutor returned an empty answer. Please try again.");
+  if (!text) {
+    if (retries > 0) return callGateway(messages, { ...options, retries: retries - 1 });
+    throw new Error("The AI tutor returned an empty answer. Please try again.");
+  }
   return text;
 }
 
