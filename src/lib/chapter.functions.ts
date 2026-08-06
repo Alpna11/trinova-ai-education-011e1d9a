@@ -65,7 +65,7 @@ export const getChapterMaterial = createServerFn({ method: "POST" })
         },
         { role: "user", content: `Generate the ${data.kind} for: ${contextLine}` },
       ],
-      { json: true, maxTokens: 4000 },
+      { json: true, maxTokens: 2600 },
     );
 
     const payload = parseJsonLoose<MaterialPayload>(raw);

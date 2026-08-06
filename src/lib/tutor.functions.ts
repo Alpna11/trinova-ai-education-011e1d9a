@@ -46,7 +46,7 @@ export const generateQuiz = createServerFn({ method: "POST" })
           content: `Create exactly ${data.count} questions on: ${data.chapterContext}`,
         },
       ],
-      { json: true, maxTokens: 3000 },
+      { json: true, maxTokens: 2000 },
     );
 
     const parsed = parseJsonLoose<{
