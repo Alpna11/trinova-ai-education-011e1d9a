@@ -14,12 +14,12 @@ export function materialPrompt(opts: {
 
   const shapes: Record<MaterialKind, string> = {
     notes:
-      '{"markdown": string, "keyTerms": [{"term": string, "meaning": string}]}. markdown must use "## " sections, short bullets, bold key terms, worked examples where useful, and end with a "## Quick recap" of 3 bullets.',
+      '{"markdown": string, "keyTerms": [{"term": string, "meaning": string}]}. markdown must use "## " sections, short bullets, bold key terms, one worked example, and end with a "## Quick recap" of 3 bullets. Give at most 6 keyTerms.',
     practice:
-      '{"questions": [{"question": string, "level": "easy"|"medium"|"hard", "hint": string, "solution": string, "topic": string}]}. Produce 8 questions across levels. solution shows numbered steps.',
-    pyq: '{"questions": [{"year": string, "marks": string, "question": string, "solution": string, "topic": string}]}. Produce 6 exam-style questions typical of past board papers for this chapter. Mark year as a plausible recent exam year and note it is representative, never claim an exact paper.',
+      '{"questions": [{"question": string, "level": "easy"|"medium"|"hard", "hint": string, "solution": string, "topic": string}]}. Produce exactly 6 questions across levels. solution is 2-4 short numbered steps.',
+    pyq: '{"questions": [{"year": string, "marks": string, "question": string, "solution": string, "topic": string}]}. Produce exactly 5 exam-style questions typical of past board papers for this chapter. Keep each solution under 60 words. Mark year as a plausible recent exam year and note it is representative, never claim an exact paper.',
     resources:
-      '{"videos": [{"title": string, "channel": string, "searchQuery": string, "why": string}], "readings": [{"title": string, "note": string}]}. Give 5 videos and 3 readings. searchQuery is a YouTube search phrase; never invent video URLs or IDs.',
+      '{"videos": [{"title": string, "channel": string, "searchQuery": string, "why": string}], "readings": [{"title": string, "note": string}]}. Give 4 videos and 3 readings, one short sentence each. searchQuery is a YouTube search phrase; never invent video URLs or IDs.',
   };
 
   return [
@@ -27,6 +27,7 @@ export function materialPrompt(opts: {
     `Depth level: ${opts.mode}.`,
     bilingualNote,
     "Never invent facts. Keep maths in plain notation (x^2, sqrt(9)).",
+    "Be concise: no preamble, no repetition, no filler. Start the JSON immediately.",
     `Reply with JSON only, exactly this shape: ${shapes[opts.kind]}`,
     `Chapter: ${opts.context}`,
   ].join("\n");

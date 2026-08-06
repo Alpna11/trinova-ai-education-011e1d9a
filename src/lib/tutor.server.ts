@@ -95,6 +95,8 @@ export async function callGateway(
         model: provider.model,
         messages,
         max_tokens: options.maxTokens ?? 2600,
+        // Flash models otherwise burn seconds (and tokens) on hidden thinking.
+        reasoning_effort: "none",
         ...(options.json ? { response_format: { type: "json_object" } } : {}),
       }),
     });
