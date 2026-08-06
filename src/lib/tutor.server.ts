@@ -57,6 +57,8 @@ function resolveProvider() {
     return {
       url: GEMINI_DIRECT,
       model: DIRECT_MODEL,
+      // Minimal thinking: Flash otherwise spends seconds on hidden reasoning.
+      extras: { reasoning_effort: "low" } as Record<string, unknown>,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${geminiKey}`,
@@ -70,6 +72,7 @@ function resolveProvider() {
   return {
     url: GATEWAY,
     model: MODEL,
+    extras: {} as Record<string, unknown>,
     headers: {
       "Content-Type": "application/json",
       "Lovable-API-Key": lovableKey,
@@ -95,8 +98,7 @@ export async function callGateway(
         model: provider.model,
         messages,
         max_tokens: options.maxTokens ?? 2600,
-        // Flash models otherwise burn seconds (and tokens) on hidden thinking.
-        reasoning_effort: "none",
+        ...provider.extras,
         ...(options.json ? { response_format: { type: "json_object" } } : {}),
       }),
     });
