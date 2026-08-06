@@ -51,43 +51,56 @@ export function tutorSystemPrompt(opts: {
   return lines.join("\n");
 }
 
-function resolveProvider() {
+type Provider = {
+  label: string;
+  url: string;
+  model: string;
+  extras: Record<string, unknown>;
+  headers: Record<string, string>;
+};
+
+// Ordered list of providers. We try each in turn so a quota/credit wall on one
+// does not take the tutor down.
+function resolveProviders(): Provider[] {
+  const providers: Provider[] = [];
   const geminiKey = process.env["GEMINI_API_KEY"];
   if (geminiKey) {
-    return {
+    providers.push({
+      label: "gemini-direct",
       url: GEMINI_DIRECT,
       model: DIRECT_MODEL,
       // Minimal thinking: Flash otherwise spends seconds on hidden reasoning.
-      extras: { reasoning_effort: "low" } as Record<string, unknown>,
+      extras: { reasoning_effort: "low" },
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${geminiKey}`,
-      } as Record<string, string>,
-    };
+      },
+    });
   }
   const lovableKey = process.env["LOVABLE_API_KEY"];
-  if (!lovableKey) {
-    throw new Error("AI is not configured yet. Add a GEMINI_API_KEY to enable the tutor.");
+  if (lovableKey) {
+    providers.push({
+      label: "lovable-gateway",
+      url: GATEWAY,
+      model: MODEL,
+      extras: {},
+      headers: {
+        "Content-Type": "application/json",
+        "Lovable-API-Key": lovableKey,
+        "X-Lovable-AIG-SDK": "fetch",
+      },
+    });
   }
-  return {
-    url: GATEWAY,
-    model: MODEL,
-    extras: {} as Record<string, unknown>,
-    headers: {
-      "Content-Type": "application/json",
-      "Lovable-API-Key": lovableKey,
-      "X-Lovable-AIG-SDK": "fetch",
-    } as Record<string, string>,
-  };
+  return providers;
 }
 
-export async function callGateway(
-  messages: ChatMessage[],
-  options: { json?: boolean; maxTokens?: number; retries?: number } = {},
-): Promise<string> {
-  const provider = resolveProvider();
-  const retries = options.retries ?? 1;
+class RetryableError extends Error {}
 
+async function callProvider(
+  provider: Provider,
+  messages: ChatMessage[],
+  options: { json?: boolean; maxTokens?: number },
+): Promise<string> {
   let res: Response;
   try {
     res = await fetch(provider.url, {
@@ -103,32 +116,31 @@ export async function callGateway(
       }),
     });
   } catch (error) {
-    console.error("[edunova-ai] network failure", error);
-    throw new Error("Couldn't reach the AI service. Check your connection and try again.");
+    console.error(`[edunova-ai] ${provider.label} network failure`, error);
+    throw new RetryableError("Couldn't reach the AI service. Check your connection and try again.");
   }
 
   if (!res.ok) {
     const body = await res.text();
-    console.error(`[edunova-ai] provider ${res.status}: ${body}`);
+    console.error(`[edunova-ai] ${provider.label} ${res.status}: ${body.slice(0, 400)}`);
     if (res.status === 401 || res.status === 403) {
-      throw new Error("The AI key is invalid or lacks access. Please update it and retry.");
+      throw new RetryableError("The AI key is invalid or lacks access. Please update it and retry.");
     }
-    if (res.status === 429 || res.status >= 500) {
-      if (retries > 0) {
-        await new Promise((r) => setTimeout(r, 1200));
-        return callGateway(messages, { ...options, retries: retries - 1 });
-      }
-      if (res.status === 429) {
-        throw new Error("The AI tutor is busy right now. Try again in a moment.");
-      }
-      throw new Error("The AI service is temporarily unavailable. Please try again.");
+    if (res.status === 429) {
+      throw new RetryableError(
+        "This AI key has hit its usage limit for now. Try again later or add credits/quota.",
+      );
     }
-    if (res.status === 402) throw new Error("AI credits are exhausted. Add credits to keep tutoring.");
+    if (res.status === 402) {
+      throw new RetryableError("AI credits are exhausted. Add credits to keep tutoring.");
+    }
     if (res.status === 404) {
-      throw new Error("The AI model is unavailable right now. Please try again shortly.");
+      throw new RetryableError("The AI model is unavailable right now. Please try again shortly.");
     }
-    throw new Error(`AI request failed (${res.status}).`);
-
+    if (res.status >= 500) {
+      throw new RetryableError("The AI service is temporarily unavailable. Please try again.");
+    }
+    throw new RetryableError(`AI request failed (${res.status}).`);
   }
 
   const data = (await res.json()) as {
@@ -136,11 +148,36 @@ export async function callGateway(
   };
   const text = data.choices?.[0]?.message?.content?.trim();
   if (!text) {
-    if (retries > 0) return callGateway(messages, { ...options, retries: retries - 1 });
-    throw new Error("The AI tutor returned an empty answer. Please try again.");
+    throw new RetryableError("The AI tutor returned an empty answer. Please try again.");
   }
   return text;
 }
+
+export async function callGateway(
+  messages: ChatMessage[],
+  options: { json?: boolean; maxTokens?: number; retries?: number } = {},
+): Promise<string> {
+  const providers = resolveProviders();
+  if (providers.length === 0) {
+    throw new Error("AI is not configured yet. Add a GEMINI_API_KEY to enable the tutor.");
+  }
+  const attempts = Math.max(1, (options.retries ?? 1) + 1);
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    for (const provider of providers) {
+      try {
+        return await callProvider(provider, messages, options);
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error("AI request failed.");
+      }
+    }
+    if (attempt < attempts - 1) await new Promise((r) => setTimeout(r, 1000));
+  }
+
+  throw new Error(lastError?.message ?? "The AI tutor is unavailable right now.");
+}
+
 
 export function parseJsonLoose<T>(raw: string): T {
   const cleaned = raw
