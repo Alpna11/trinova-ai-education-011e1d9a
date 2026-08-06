@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ROLE_LABELS, SECOND_LANGUAGES, type AppRole } from "@/lib/edunova";
+import { SECOND_LANGUAGES } from "@/lib/edunova";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
@@ -48,7 +48,6 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<AppRole>("student");
   const [language, setLanguage] = useState<string>("Hindi");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
@@ -69,7 +68,9 @@ function AuthPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: fullName.trim(), role, second_language: language },
+            // Roles are never client-supplied: the server always creates
+            // new accounts as students; admins grant teacher/admin later.
+            data: { full_name: fullName.trim(), second_language: language },
           },
         });
         if (error) throw error;
@@ -165,37 +166,24 @@ function AuthPage() {
                       placeholder="Ananya Sharma"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label>I am a</Label>
-                      <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(["student", "teacher", "parent"] as AppRole[]).map((r) => (
-                            <SelectItem key={r} value={r}>
-                              {ROLE_LABELS[r]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Second language</Label>
-                      <Select value={language} onValueChange={setLanguage}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SECOND_LANGUAGES.map((l) => (
-                            <SelectItem key={l} value={l}>
-                              {l}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Second language</Label>
+                    <Select value={language} onValueChange={setLanguage}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SECOND_LANGUAGES.map((l) => (
+                          <SelectItem key={l} value={l}>
+                            {l}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      New accounts start as students. Teacher and parent access is granted by an
+                      admin after sign-up.
+                    </p>
                   </div>
                 </>
               ) : null}
