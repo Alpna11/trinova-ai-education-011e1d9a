@@ -120,7 +120,11 @@ export async function callGateway(
       throw new Error("The AI service is temporarily unavailable. Please try again.");
     }
     if (res.status === 402) throw new Error("AI credits are exhausted. Add credits to keep tutoring.");
+    if (res.status === 404) {
+      throw new Error("The AI model is unavailable right now. Please try again shortly.");
+    }
     throw new Error(`AI request failed (${res.status}).`);
+
   }
 
   const data = (await res.json()) as {
