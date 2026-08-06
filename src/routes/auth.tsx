@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ROLE_LABELS, SECOND_LANGUAGES, type AppRole } from "@/lib/edunova";
+import { SECOND_LANGUAGES } from "@/lib/edunova";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
@@ -48,7 +48,6 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<AppRole>("student");
   const [language, setLanguage] = useState<string>("Hindi");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
