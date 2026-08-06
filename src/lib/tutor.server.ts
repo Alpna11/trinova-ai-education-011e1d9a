@@ -4,7 +4,7 @@ const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 // Direct Google Gemini endpoint, used only when a GEMINI_API_KEY is configured.
 const GEMINI_DIRECT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 const MODEL = "google/gemini-3.6-flash";
-const DIRECT_MODEL = "gemini-2.5-flash";
+const DIRECT_MODEL = "gemini-flash-latest";
 const TIMEOUT_MS = 60_000;
 
 type Part =
@@ -120,7 +120,11 @@ export async function callGateway(
       throw new Error("The AI service is temporarily unavailable. Please try again.");
     }
     if (res.status === 402) throw new Error("AI credits are exhausted. Add credits to keep tutoring.");
+    if (res.status === 404) {
+      throw new Error("The AI model is unavailable right now. Please try again shortly.");
+    }
     throw new Error(`AI request failed (${res.status}).`);
+
   }
 
   const data = (await res.json()) as {
