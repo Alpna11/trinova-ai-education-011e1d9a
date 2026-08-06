@@ -69,7 +69,9 @@ function AuthPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: fullName.trim(), role, second_language: language },
+            // Roles are never client-supplied: the server always creates
+            // new accounts as students; admins grant teacher/admin later.
+            data: { full_name: fullName.trim(), second_language: language },
           },
         });
         if (error) throw error;
