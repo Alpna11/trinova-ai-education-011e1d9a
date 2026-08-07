@@ -78,6 +78,7 @@ function Landing() {
         <div className="ml-auto flex items-center gap-3">
           <Link
             to="/auth"
+            search={{ mode: "signin" }}
             className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Sign in
@@ -116,6 +117,7 @@ function Landing() {
             </Link>
             <Link
               to="/auth"
+              search={{ mode: "signin" }}
               className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-5 py-3 font-semibold text-foreground transition-colors hover:bg-surface-2"
             >
               I already have an account

@@ -36,7 +36,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/auth", search: { mode: "signin" }, replace: true });
   }
 
   return (
