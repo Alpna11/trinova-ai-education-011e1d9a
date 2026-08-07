@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { FileText, ImageIcon, Languages, Loader2, Paperclip, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { solveQuestion } from "@/lib/tutor.functions";
+import { getMockSolution } from "@/lib/mock-content";
 import { useProfile } from "@/hooks/use-profile";
 import { TUTOR_MODES, type TutorMode } from "@/lib/edunova";
 import {
@@ -46,7 +45,6 @@ export const Route = createFileRoute("/_authenticated/ask")({
 
 function AskPage() {
   const { data: me } = useProfile();
-  const solve = useServerFn(solveQuestion);
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -68,28 +66,22 @@ function AskPage() {
     setFile(f);
   }
 
-  function toDataUrl(f: File) {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(new Error("Could not read that file."));
-      reader.readAsDataURL(f);
-    });
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (busy || (!text.trim() && !file)) return;
     setBusy(true);
     setAnswer(null);
     try {
-      const attachment = file
-        ? { dataUrl: await toDataUrl(file), fileName: file.name, mimeType: file.type }
-        : undefined;
-
-      const res = await solve({
-        data: { mode, language, bilingual, text: text.trim() || undefined, attachment },
-      });
+      // Offline solver: the step-by-step walkthrough is generated locally.
+      const res = {
+        answer: getMockSolution({
+          mode,
+          language,
+          bilingual,
+          text: text.trim() || undefined,
+          fileName: file?.name,
+        }),
+      };
       setAnswer(res.answer);
 
       let storedPath: string | null = null;

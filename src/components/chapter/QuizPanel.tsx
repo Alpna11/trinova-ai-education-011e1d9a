@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { ArrowRight, Check, Loader2, ListChecks, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { generateQuiz } from "@/lib/tutor.functions";
+import { getMockQuiz } from "@/lib/mock-content";
 import { useStudyPrefs } from "@/hooks/use-study-prefs";
 import type { QuizQuestion } from "@/lib/edunova";
 import {
@@ -35,7 +34,6 @@ export function QuizPanel({
   userId: string | undefined;
 }) {
   const { mode, bilingual } = useStudyPrefs();
-  const quizFn = useServerFn(generateQuiz);
   const queryClient = useQueryClient();
 
   const [quiz, setQuiz] = useState<QuizQuestion[] | null>(null);
@@ -68,10 +66,8 @@ export function QuizPanel({
     setSubmitted(false);
     setWeakTopics([]);
     try {
-      const res = await quizFn({
-        data: { mode, language, bilingual, chapterContext: chapterContext.slice(0, 600), count: 5 },
-      });
-      setQuiz(res.questions);
+      // Offline quiz: questions come from the local sample pack, no AI call.
+      setQuiz(getMockQuiz({ chapterName, mode, language, bilingual, count: 5 }));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not build a quiz.");
     } finally {
@@ -136,8 +132,8 @@ export function QuizPanel({
         <div>
           <h2 className="font-display text-xl font-semibold">Topic-wise quiz</h2>
           <p className="text-sm text-muted-foreground">
-            AI writes fresh questions for this chapter at your chosen depth, then explains every
-            answer.
+            Five sample questions for this chapter at your chosen depth, with an explanation for
+            every answer.
           </p>
         </div>
         <Button className="ml-auto font-semibold" onClick={build} disabled={building}>

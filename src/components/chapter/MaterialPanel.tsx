@@ -1,7 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { Loader2, RefreshCw, Youtube } from "lucide-react";
-import { getChapterMaterial } from "@/lib/chapter.functions";
+import { useMemo, useState } from "react";
+import { RefreshCw, Youtube } from "lucide-react";
+import { getMockMaterial } from "@/lib/mock-content";
 import type {
   MaterialKind,
   NotesPayload,
@@ -20,27 +19,26 @@ import {
 } from "@/components/ui/accordion";
 
 export function MaterialPanel({
-  chapterId,
+  chapterName,
   kind,
   language,
   title,
   blurb,
 }: {
-  chapterId: string;
+  chapterName: string;
   kind: MaterialKind;
   language: string;
   title: string;
   blurb: string;
 }) {
   const { mode, bilingual } = useStudyPrefs();
-  const load = useServerFn(getChapterMaterial);
+  const [nonce, setNonce] = useState(0);
 
-  const query = useQuery({
-    queryKey: ["chapter-material", chapterId, kind, mode, bilingual, language],
-    queryFn: () =>
-      load({ data: { chapterId, kind, mode, language, bilingual } }).then((r) => r.payload),
-    staleTime: 5 * 60_000,
-  });
+  // Fully offline: sample study material is built locally, so it renders instantly.
+  const payload = useMemo(
+    () => getMockMaterial(kind, { chapterName, mode, language, bilingual }),
+    [kind, chapterName, mode, language, bilingual, nonce],
+  );
 
   return (
     <section className="space-y-4">
@@ -53,37 +51,23 @@ export function MaterialPanel({
           variant="secondary"
           size="sm"
           className="ml-auto"
-          disabled={query.isFetching}
-          onClick={() => query.refetch()}
+          onClick={() => setNonce((n) => n + 1)}
         >
-          {query.isFetching ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <RefreshCw className="size-4" />
-          )}
-          Regenerate
+          <RefreshCw className="size-4" />
+          Refresh
         </Button>
       </div>
 
-      {query.isPending ? (
-        <div className="panel flex items-center gap-3 p-6 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin text-lime" /> Building your {title.toLowerCase()}…
-        </div>
-      ) : query.error ? (
-        <div className="panel p-6 text-sm text-destructive">
-          {query.error instanceof Error ? query.error.message : "Could not load this material."}
-        </div>
-      ) : query.data ? (
-        <div className="panel p-6">
-          {kind === "notes" ? <Notes payload={query.data as NotesPayload} /> : null}
-          {kind === "practice" ? <Practice payload={query.data as PracticePayload} /> : null}
-          {kind === "pyq" ? <Pyq payload={query.data as PyqPayload} /> : null}
-          {kind === "resources" ? <Resources payload={query.data as ResourcesPayload} /> : null}
-        </div>
-      ) : null}
+      <div className="panel p-6">
+        {kind === "notes" ? <Notes payload={payload as NotesPayload} /> : null}
+        {kind === "practice" ? <Practice payload={payload as PracticePayload} /> : null}
+        {kind === "pyq" ? <Pyq payload={payload as PyqPayload} /> : null}
+        {kind === "resources" ? <Resources payload={payload as ResourcesPayload} /> : null}
+      </div>
     </section>
   );
 }
+
 
 function Notes({ payload }: { payload: NotesPayload }) {
   return (
