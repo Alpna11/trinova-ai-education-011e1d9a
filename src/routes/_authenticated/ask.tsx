@@ -66,15 +66,6 @@ function AskPage() {
     setFile(f);
   }
 
-  function toDataUrl(f: File) {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(new Error("Could not read that file."));
-      reader.readAsDataURL(f);
-    });
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (busy || (!text.trim() && !file)) return;
