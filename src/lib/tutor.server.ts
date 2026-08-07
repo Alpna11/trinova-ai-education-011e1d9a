@@ -91,6 +91,9 @@ function resolveProviders(): Provider[] {
       },
     });
   }
+  // Helpful for production debugging: log how many AI providers are configured
+  // without exposing any key material.
+  console.log(`[edunova-ai] providers configured: ${providers.length} (gemini=${geminiKey ? "yes" : "no"}, lovable=${lovableKey ? "yes" : "no"})`);
   return providers;
 }
 
