@@ -460,8 +460,8 @@ export function getMockSolution(opts: {
   mode: Mode | string;
   language: string;
   bilingual: boolean;
-  text?: string;
-  fileName?: string;
+  text?: string | undefined;
+  fileName?: string | undefined;
 }): string {
   const subject = opts.text?.trim() || opts.fileName || "your uploaded question";
   const body = `## Question
