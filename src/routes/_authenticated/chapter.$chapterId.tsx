@@ -119,7 +119,7 @@ function ChapterHub() {
 
         <TabsContent value="notes">
           <MaterialPanel
-            chapterName={chapter?.name ?? "this chapter"}
+            chapterId={chapterId}
             kind="notes"
             language={language}
             title="Chapter notes"
@@ -141,7 +141,7 @@ function ChapterHub() {
 
         <TabsContent value="practice">
           <MaterialPanel
-            chapterName={chapter?.name ?? "this chapter"}
+            chapterId={chapterId}
             kind="practice"
             language={language}
             title="Practice questions"
@@ -165,7 +165,7 @@ function ChapterHub() {
 
         <TabsContent value="pyq">
           <MaterialPanel
-            chapterName={chapter?.name ?? "this chapter"}
+            chapterId={chapterId}
             kind="pyq"
             language={language}
             title="Previous-year questions"
@@ -175,7 +175,7 @@ function ChapterHub() {
 
         <TabsContent value="videos">
           <MaterialPanel
-            chapterName={chapter?.name ?? "this chapter"}
+            chapterId={chapterId}
             kind="resources"
             language={language}
             title="Video & reading resources"

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Send, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { getMockTutorAnswer } from "@/lib/mock-content";
+import { askTutor } from "@/lib/tutor.functions";
 import { useStudyPrefs } from "@/hooks/use-study-prefs";
 import {
   bumpChapterProgress,
@@ -30,6 +31,7 @@ export function TutorPanel({
   userId: string | undefined;
 }) {
   const { mode, bilingual } = useStudyPrefs();
+  const ask = useServerFn(askTutor);
   const queryClient = useQueryClient();
 
   const [question, setQuestion] = useState("");
@@ -42,18 +44,16 @@ export function TutorPanel({
     setThinking(true);
     setAnswer(null);
     try {
-      // Offline tutor: the explanation is composed locally from sample content.
-      const res = {
-        answer: getMockTutorAnswer({
-          chapterName: chapterName || chapterContext.slice(0, 60),
+      const res = await ask({
+        data: {
           mode,
           language,
           bilingual,
+          chapterContext: chapterContext.slice(0, 600),
           question: question.trim(),
-        }),
-      };
+        },
+      });
       setAnswer(res.answer);
-
 
       if (userId) {
         await saveLearningRecord({
