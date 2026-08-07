@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/teacher")({
   beforeLoad: async () => {
     const { data: auth } = await supabase.auth.getUser();
-    if (!auth.user) throw redirect({ to: "/auth" });
+    if (!auth.user) throw redirect({ to: "/auth", search: { mode: "signin" } });
     const { data } = await supabase
       .from("user_roles")
       .select("role")
