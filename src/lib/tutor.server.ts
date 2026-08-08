@@ -142,6 +142,10 @@ async function callProvider(
   return text;
 }
 
+/**
+ * Sends a chat request to the Google Gemini API from the server only.
+ * Tries the primary model, then fallback models, then retries once with backoff.
+ */
 export async function callGateway(
   messages: ChatMessage[],
   options: { json?: boolean; maxTokens?: number; retries?: number } = {},
@@ -152,7 +156,6 @@ export async function callGateway(
   }
   const attempts = Math.max(1, (options.retries ?? 1) + 1);
   let lastError: Error | null = null;
-  let sawCreditError = false;
 
   for (let attempt = 0; attempt < attempts; attempt++) {
     for (const provider of providers) {
@@ -160,22 +163,14 @@ export async function callGateway(
         return await callProvider(provider, messages, options);
       } catch (error) {
         lastError = error instanceof Error ? error : new Error("AI request failed.");
-        if (lastError.message.includes("credits") || lastError.message.includes("usage limit")) {
-          sawCreditError = true;
-        }
       }
     }
     if (attempt < attempts - 1) await new Promise((r) => setTimeout(r, 1000));
   }
 
-  const baseMessage = lastError?.message ?? "The AI tutor is unavailable right now.";
-  if (sawCreditError && !process.env["GEMINI_API_KEY"]) {
-    throw new Error(
-      `${baseMessage} To keep Edunova free to run, add a GEMINI_API_KEY in project settings.`,
-    );
-  }
-  throw new Error(baseMessage);
+  throw new Error(lastError?.message ?? "The AI tutor is unavailable right now.");
 }
+
 
 
 export function parseJsonLoose<T>(raw: string): T {
