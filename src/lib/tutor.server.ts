@@ -60,43 +60,28 @@ type Provider = {
   headers: Record<string, string>;
 };
 
-// Ordered list of providers. We try each in turn so a quota/credit wall on one
-// does not take the tutor down.
+// Gemini-only provider list: the primary model first, then fallbacks in case a
+// model id is retired (404). No other AI service is used anywhere in the app.
 function resolveProviders(): Provider[] {
-  const providers: Provider[] = [];
   const geminiKey = process.env["GEMINI_API_KEY"];
-  if (geminiKey) {
-    providers.push({
-      label: "gemini-direct",
-      url: GEMINI_DIRECT,
-      model: DIRECT_MODEL,
-      // Minimal thinking: Flash otherwise spends seconds on hidden reasoning.
-      extras: { reasoning_effort: "low" },
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${geminiKey}`,
-      },
-    });
+  if (!geminiKey) {
+    console.error("[edunova-ai] GEMINI_API_KEY is not configured");
+    return [];
   }
-  const lovableKey = process.env["LOVABLE_API_KEY"];
-  if (lovableKey) {
-    providers.push({
-      label: "lovable-gateway",
-      url: GATEWAY,
-      model: MODEL,
-      extras: {},
-      headers: {
-        "Content-Type": "application/json",
-        "Lovable-API-Key": lovableKey,
-        "X-Lovable-AIG-SDK": "fetch",
-      },
-    });
-  }
-  // Helpful for production debugging: log how many AI providers are configured
-  // without exposing any key material.
-  console.log(`[edunova-ai] providers configured: ${providers.length} (gemini=${geminiKey ? "yes" : "no"}, lovable=${lovableKey ? "yes" : "no"})`);
-  return providers;
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${geminiKey}`,
+  };
+  return [DIRECT_MODEL, ...FALLBACK_MODELS].map((model) => ({
+    label: `gemini:${model}`,
+    url: GEMINI_DIRECT,
+    model,
+    // Minimal thinking: Flash otherwise spends seconds on hidden reasoning.
+    extras: { reasoning_effort: "low" },
+    headers,
+  }));
 }
+
 
 class RetryableError extends Error {}
 
