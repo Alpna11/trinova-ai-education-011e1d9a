@@ -1,11 +1,12 @@
 // Server-only helpers for Edunova's AI tutor. Never imported by client code directly.
-// All AI calls run here: the API key stays in server env vars and is never sent to the browser.
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-// Direct Google Gemini endpoint, used only when a GEMINI_API_KEY is configured.
+// All AI calls run here: the Gemini API key stays in server env vars and is never sent
+// to the browser. Google Gemini is the ONLY AI provider — no Lovable AI gateway.
 const GEMINI_DIRECT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const MODEL = "google/gemini-3.6-flash";
 const DIRECT_MODEL = "gemini-flash-latest";
+// Fallback models, tried in order if the primary model is unavailable (404).
+const FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-flash-lite-latest"];
 const TIMEOUT_MS = 60_000;
+
 
 type Part =
   | { type: "text"; text: string }
@@ -59,43 +60,28 @@ type Provider = {
   headers: Record<string, string>;
 };
 
-// Ordered list of providers. We try each in turn so a quota/credit wall on one
-// does not take the tutor down.
+// Gemini-only provider list: the primary model first, then fallbacks in case a
+// model id is retired (404). No other AI service is used anywhere in the app.
 function resolveProviders(): Provider[] {
-  const providers: Provider[] = [];
   const geminiKey = process.env["GEMINI_API_KEY"];
-  if (geminiKey) {
-    providers.push({
-      label: "gemini-direct",
-      url: GEMINI_DIRECT,
-      model: DIRECT_MODEL,
-      // Minimal thinking: Flash otherwise spends seconds on hidden reasoning.
-      extras: { reasoning_effort: "low" },
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${geminiKey}`,
-      },
-    });
+  if (!geminiKey) {
+    console.error("[edunova-ai] GEMINI_API_KEY is not configured");
+    return [];
   }
-  const lovableKey = process.env["LOVABLE_API_KEY"];
-  if (lovableKey) {
-    providers.push({
-      label: "lovable-gateway",
-      url: GATEWAY,
-      model: MODEL,
-      extras: {},
-      headers: {
-        "Content-Type": "application/json",
-        "Lovable-API-Key": lovableKey,
-        "X-Lovable-AIG-SDK": "fetch",
-      },
-    });
-  }
-  // Helpful for production debugging: log how many AI providers are configured
-  // without exposing any key material.
-  console.log(`[edunova-ai] providers configured: ${providers.length} (gemini=${geminiKey ? "yes" : "no"}, lovable=${lovableKey ? "yes" : "no"})`);
-  return providers;
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${geminiKey}`,
+  };
+  return [DIRECT_MODEL, ...FALLBACK_MODELS].map((model) => ({
+    label: `gemini:${model}`,
+    url: GEMINI_DIRECT,
+    model,
+    // Minimal thinking: Flash otherwise spends seconds on hidden reasoning.
+    extras: { reasoning_effort: "low" },
+    headers,
+  }));
 }
+
 
 class RetryableError extends Error {}
 
@@ -127,19 +113,19 @@ async function callProvider(
     const body = await res.text();
     console.error(`[edunova-ai] ${provider.label} ${res.status}: ${body.slice(0, 400)}`);
     if (res.status === 401 || res.status === 403) {
-      throw new RetryableError("The AI key is invalid or lacks access. Please update it and retry.");
+      throw new RetryableError(
+        "The Gemini API key is invalid or lacks access. Please update GEMINI_API_KEY and retry.",
+      );
     }
     if (res.status === 429) {
       throw new RetryableError(
-        "This AI key has hit its usage limit for now. Try again later or add credits/quota.",
+        "Your Gemini API quota is exhausted for now. Try again later or raise the quota in Google AI Studio.",
       );
     }
-    if (res.status === 402) {
-      throw new RetryableError("AI credits are exhausted. Add credits to keep tutoring.");
-    }
     if (res.status === 404) {
-      throw new RetryableError("The AI model is unavailable right now. Please try again shortly.");
+      throw new RetryableError("This Gemini model is unavailable right now. Please try again shortly.");
     }
+
     if (res.status >= 500) {
       throw new RetryableError("The AI service is temporarily unavailable. Please try again.");
     }
@@ -156,6 +142,10 @@ async function callProvider(
   return text;
 }
 
+/**
+ * Sends a chat request to the Google Gemini API from the server only.
+ * Tries the primary model, then fallback models, then retries once with backoff.
+ */
 export async function callGateway(
   messages: ChatMessage[],
   options: { json?: boolean; maxTokens?: number; retries?: number } = {},
@@ -166,7 +156,6 @@ export async function callGateway(
   }
   const attempts = Math.max(1, (options.retries ?? 1) + 1);
   let lastError: Error | null = null;
-  let sawCreditError = false;
 
   for (let attempt = 0; attempt < attempts; attempt++) {
     for (const provider of providers) {
@@ -174,22 +163,14 @@ export async function callGateway(
         return await callProvider(provider, messages, options);
       } catch (error) {
         lastError = error instanceof Error ? error : new Error("AI request failed.");
-        if (lastError.message.includes("credits") || lastError.message.includes("usage limit")) {
-          sawCreditError = true;
-        }
       }
     }
     if (attempt < attempts - 1) await new Promise((r) => setTimeout(r, 1000));
   }
 
-  const baseMessage = lastError?.message ?? "The AI tutor is unavailable right now.";
-  if (sawCreditError && !process.env["GEMINI_API_KEY"]) {
-    throw new Error(
-      `${baseMessage} To keep Edunova free to run, add a GEMINI_API_KEY in project settings.`,
-    );
-  }
-  throw new Error(baseMessage);
+  throw new Error(lastError?.message ?? "The AI tutor is unavailable right now.");
 }
+
 
 
 export function parseJsonLoose<T>(raw: string): T {
