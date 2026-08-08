@@ -113,19 +113,19 @@ async function callProvider(
     const body = await res.text();
     console.error(`[edunova-ai] ${provider.label} ${res.status}: ${body.slice(0, 400)}`);
     if (res.status === 401 || res.status === 403) {
-      throw new RetryableError("The AI key is invalid or lacks access. Please update it and retry.");
+      throw new RetryableError(
+        "The Gemini API key is invalid or lacks access. Please update GEMINI_API_KEY and retry.",
+      );
     }
     if (res.status === 429) {
       throw new RetryableError(
-        "This AI key has hit its usage limit for now. Try again later or add credits/quota.",
+        "Your Gemini API quota is exhausted for now. Try again later or raise the quota in Google AI Studio.",
       );
     }
-    if (res.status === 402) {
-      throw new RetryableError("AI credits are exhausted. Add credits to keep tutoring.");
-    }
     if (res.status === 404) {
-      throw new RetryableError("The AI model is unavailable right now. Please try again shortly.");
+      throw new RetryableError("This Gemini model is unavailable right now. Please try again shortly.");
     }
+
     if (res.status >= 500) {
       throw new RetryableError("The AI service is temporarily unavailable. Please try again.");
     }
