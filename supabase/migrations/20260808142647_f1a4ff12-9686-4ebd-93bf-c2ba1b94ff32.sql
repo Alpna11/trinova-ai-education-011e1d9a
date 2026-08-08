@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "students read published quiz questions" ON public.teacher_quiz_questions;
