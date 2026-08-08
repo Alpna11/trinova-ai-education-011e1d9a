@@ -38,6 +38,148 @@ export type Database = {
         }
         Relationships: []
       }
+      announcements: {
+        Row: {
+          body: string | null
+          class_id: string | null
+          created_at: string
+          id: string
+          published: boolean
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          published?: boolean
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          published?: boolean
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assignment_submissions: {
+        Row: {
+          assignment_id: string
+          content: string | null
+          feedback: string | null
+          file_url: string | null
+          id: string
+          marks: number | null
+          student_id: string
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          assignment_id: string
+          content?: string | null
+          feedback?: string | null
+          file_url?: string | null
+          id?: string
+          marks?: number | null
+          student_id: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          assignment_id?: string
+          content?: string | null
+          feedback?: string | null
+          file_url?: string | null
+          id?: string
+          marks?: number | null
+          student_id?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_submissions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assignments: {
+        Row: {
+          chapter_id: string | null
+          class_id: string | null
+          created_at: string
+          deadline: string | null
+          description: string | null
+          id: string
+          max_marks: number
+          published: boolean
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          chapter_id?: string | null
+          class_id?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          max_marks?: number
+          published?: boolean
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          chapter_id?: string | null
+          class_id?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          max_marks?: number
+          published?: boolean
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       boards: {
         Row: {
           created_at: string
@@ -175,6 +317,106 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "chapters_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_enrollments: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_enrollments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          board_id: string | null
+          chapter_id: string | null
+          created_at: string
+          description: string | null
+          grade_level_id: string | null
+          id: string
+          join_code: string
+          name: string
+          subject_id: string | null
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          board_id?: string | null
+          chapter_id?: string | null
+          created_at?: string
+          description?: string | null
+          grade_level_id?: string | null
+          id?: string
+          join_code?: string
+          name: string
+          subject_id?: string | null
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          board_id?: string | null
+          chapter_id?: string | null
+          created_at?: string
+          description?: string | null
+          grade_level_id?: string | null
+          id?: string
+          join_code?: string
+          name?: string
+          subject_id?: string | null
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classes_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "boards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classes_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classes_grade_level_id_fkey"
+            columns: ["grade_level_id"]
+            isOneToOne: false
+            referencedRelation: "grade_levels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classes_subject_id_fkey"
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "subjects"
@@ -343,6 +585,139 @@ export type Database = {
           },
         ]
       }
+      question_bank: {
+        Row: {
+          approved: boolean
+          board_id: string | null
+          chapter_id: string | null
+          correct_answer: string | null
+          created_at: string
+          difficulty: string
+          explanation: string | null
+          grade_level_id: string | null
+          id: string
+          kind: string
+          marks: number
+          options: Json
+          prompt: string
+          source: string
+          subject_id: string | null
+          teacher_id: string
+          topic: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved?: boolean
+          board_id?: string | null
+          chapter_id?: string | null
+          correct_answer?: string | null
+          created_at?: string
+          difficulty?: string
+          explanation?: string | null
+          grade_level_id?: string | null
+          id?: string
+          kind?: string
+          marks?: number
+          options?: Json
+          prompt: string
+          source?: string
+          subject_id?: string | null
+          teacher_id: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved?: boolean
+          board_id?: string | null
+          chapter_id?: string | null
+          correct_answer?: string | null
+          created_at?: string
+          difficulty?: string
+          explanation?: string | null
+          grade_level_id?: string | null
+          id?: string
+          kind?: string
+          marks?: number
+          options?: Json
+          prompt?: string
+          source?: string
+          subject_id?: string | null
+          teacher_id?: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_bank_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "boards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_bank_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_bank_grade_level_id_fkey"
+            columns: ["grade_level_id"]
+            isOneToOne: false
+            referencedRelation: "grade_levels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_bank_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_submissions: {
+        Row: {
+          answers: Json
+          id: string
+          quiz_id: string
+          score: number | null
+          student_id: string
+          submitted_at: string
+          total: number
+          weak_topics: string[]
+        }
+        Insert: {
+          answers?: Json
+          id?: string
+          quiz_id: string
+          score?: number | null
+          student_id: string
+          submitted_at?: string
+          total?: number
+          weak_topics?: string[]
+        }
+        Update: {
+          answers?: Json
+          id?: string
+          quiz_id?: string
+          score?: number | null
+          student_id?: string
+          submitted_at?: string
+          total?: number
+          weak_topics?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_submissions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quizzes: {
         Row: {
           answers: Json
@@ -392,6 +767,99 @@ export type Database = {
             columns: ["chapter_id"]
             isOneToOne: false
             referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_materials: {
+        Row: {
+          board_id: string | null
+          body: string | null
+          chapter_id: string | null
+          class_id: string | null
+          created_at: string
+          description: string | null
+          file_type: string | null
+          file_url: string | null
+          grade_level_id: string | null
+          id: string
+          published: boolean
+          subject_id: string | null
+          teacher_id: string
+          title: string
+          topic: string | null
+          updated_at: string
+        }
+        Insert: {
+          board_id?: string | null
+          body?: string | null
+          chapter_id?: string | null
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          grade_level_id?: string | null
+          id?: string
+          published?: boolean
+          subject_id?: string | null
+          teacher_id: string
+          title: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Update: {
+          board_id?: string | null
+          body?: string | null
+          chapter_id?: string | null
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          grade_level_id?: string | null
+          id?: string
+          published?: boolean
+          subject_id?: string | null
+          teacher_id?: string
+          title?: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_materials_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "boards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_materials_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_materials_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_materials_grade_level_id_fkey"
+            columns: ["grade_level_id"]
+            isOneToOne: false
+            referencedRelation: "grade_levels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_materials_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
@@ -471,6 +939,150 @@ export type Database = {
             columns: ["chapter_id"]
             isOneToOne: false
             referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teacher_profiles: {
+        Row: {
+          bio: string | null
+          classes_taught: string[]
+          created_at: string
+          display_name: string | null
+          id: string
+          subjects: string[]
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          classes_taught?: string[]
+          created_at?: string
+          display_name?: string | null
+          id: string
+          subjects?: string[]
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          classes_taught?: string[]
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          subjects?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      teacher_quiz_questions: {
+        Row: {
+          correct_answer: string | null
+          created_at: string
+          explanation: string | null
+          id: string
+          kind: string
+          marks: number
+          options: Json
+          position: number
+          prompt: string
+          quiz_id: string
+        }
+        Insert: {
+          correct_answer?: string | null
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          kind?: string
+          marks?: number
+          options?: Json
+          position?: number
+          prompt: string
+          quiz_id: string
+        }
+        Update: {
+          correct_answer?: string | null
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          kind?: string
+          marks?: number
+          options?: Json
+          position?: number
+          prompt?: string
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teacher_quizzes: {
+        Row: {
+          chapter_id: string | null
+          class_id: string | null
+          created_at: string
+          id: string
+          instructions: string | null
+          published: boolean
+          subject_id: string | null
+          teacher_id: string
+          time_limit_minutes: number
+          title: string
+          total_marks: number
+          updated_at: string
+        }
+        Insert: {
+          chapter_id?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          instructions?: string | null
+          published?: boolean
+          subject_id?: string | null
+          teacher_id: string
+          time_limit_minutes?: number
+          title: string
+          total_marks?: number
+          updated_at?: string
+        }
+        Update: {
+          chapter_id?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          instructions?: string | null
+          published?: boolean
+          subject_id?: string | null
+          teacher_id?: string
+          time_limit_minutes?: number
+          title?: string
+          total_marks?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_quizzes_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_quizzes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_quizzes_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
