@@ -86,6 +86,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Edunova is an AI learning platform: pick your board, class and chapter, learn in simple, standard or advanced mode, upload doubts, and track progress.",
       },
       { name: "author", content: "Edunova" },
+      {
+        name: "google-site-verification",
+        content: "LFMp8uW5xTVSG3lF8cKBOwyDkhoFe4ENUnmojRnjpsU",
+      },
+
       { property: "og:title", content: "Edunova — AI tutor for every chapter" },
       {
         property: "og:description",
