@@ -136,13 +136,21 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-    });
-    return () => data.subscription.unsubscribe();
+    // Auth wiring must never take the whole app down (e.g. backend config not
+    // yet injected into a build) — the landing page works without a session.
+    try {
+      const { data } = supabase.auth.onAuthStateChange((event) => {
+        if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+        router.invalidate();
+        if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      });
+      return () => data.subscription.unsubscribe();
+    } catch (error) {
+      console.error("[auth] listener not started", error);
+      return;
+    }
   }, [router, queryClient]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
