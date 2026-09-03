@@ -63,7 +63,11 @@ type Provider = {
 // Gemini-only provider list: the primary model first, then fallbacks in case a
 // model id is retired (404). No other AI service is used anywhere in the app.
 function resolveProviders(): Provider[] {
-  const geminiKey = process.env["GEMINI_API_KEY"];
+  // Accept either secret name so the key configured in this project is found.
+  const geminiKey =
+    process.env["GEMINI_API_KEY"] ||
+    process.env["API_KEY_GIMINI"] ||
+    process.env["GOOGLE_API_KEY"];
   if (!geminiKey) {
     console.error("[edunova-ai] GEMINI_API_KEY is not configured");
     return [];
